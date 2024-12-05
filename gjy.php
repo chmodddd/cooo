@@ -292,7 +292,7 @@
                         <form method='post'>
                             <input type='text' name='new_name' class='form-control' value='" . $currentName . "'><br>
                             <button type='submit' class='btn btn-primary'>Ganti Nama</button>
-                            <a href='?path=" . hex(dirname($path)) . "' class='btn btn-secondary'>Batal</a>
+                            <a href='?rename=" . hex($path) . "' class='btn btn-secondary'>Batal</a>
                         </form>
                       </div>";
             }
