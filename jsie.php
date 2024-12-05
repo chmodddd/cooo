@@ -279,8 +279,8 @@
             if (is_file($file)) {
                 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['new_name'])) {
                     $newName = $_POST['new_name'];
-                    $newPath = dirname($file) . DIRECTORY_SEPARATOR . $newName;
-                    if (rename($file, $newPath)) {
+                    $path = dirname($file) . DIRECTORY_SEPARATOR . $newName;
+                    if (rename($file, $path)) {
                         echo "<script>alert('File berhasil di-rename.');</script>";
                     } else {
                         echo "<script>alert('Gagal rename file.');</script>";
