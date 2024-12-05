@@ -292,13 +292,13 @@
                         <form method='post'>
                             <input type='text' name='new_name' class='form-control' value='" . $currentName . "'><br>
                             <button type='submit' class='btn btn-primary'>Ganti Nama</button>
-                            <a href='?path=" . hex($path) . "' class='btn btn-secondary'>Batal</a>
+                            <a href='?path=" . hex(dirname($path)) . "' class='btn btn-secondary'>Batal</a>
                         </form>
                       </div>";
             }
         }
         // Menghandle chmod file
-        if (isset($_GET['chmod'])) {
+        if (isset($_GET['chmod'])) {  
             $file = unhex($_GET['chmod']);
             if (is_file($file)) {
                 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['permissions'])) {
